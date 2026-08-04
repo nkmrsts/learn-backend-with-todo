@@ -42,8 +42,8 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 **やること**
 1. 本を一通り読む（正規化・外部キー・多対多の章は特に丁寧に）
 2. TODOアプリ要件をもとにtodos / tags / todo_tagsのER図をdraw.ioなどで書く
+   - [ER diagram](https://github.com/nkmrsts/learn-backend-with-todo/blob/main/docs/todo-er-diagram.drawio.svg)
 3. 設計したER図をもとにPostgreSQLでテーブルを作る
-4. 「なぜこの設計にしたか」を自分の言葉で説明できるか確認する
 
 ### 2. SQL / PostgreSQL
 
