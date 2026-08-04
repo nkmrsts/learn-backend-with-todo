@@ -1,16 +1,21 @@
 # 学習ロードマップ
 
-**目的**
+## 目的
 バックエンド領域で必要となる基礎知識を、実際に手を動かしながら体系的に学ぶことを目的とする。
+
 SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流れとして経験することで、Webアプリケーションがどのように構成され、どの技術がどの役割を持っているのかを理解する。
 
-**ゴール**
+## ゴール
 各単元で学習・実装した内容を段階的に組み合わせ、最終的にシンプルなTODOアプリを完成させる。
+
 バックエンドを中心としたWebアプリケーション開発の一連の流れを、自分で説明・実装できる状態を目指す。
+
 完成の基準は「デプロイ済みのURLで、ログイン・TODO作成・タグ絞り込み・削除がすべて動くこと」とする。
 
+
 ### **アプリ要件**
-機能：
+
+#### 機能：
 - TODOのCRUD
 - タグのCRUD
 - タグによる絞り込み
@@ -18,7 +23,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 - 表示フィルター(例: 未完了のみを絞り込める)
 - 自分のTODOのみ操作可能
 
-テーブル設計
+#### テーブル設計
 | **エンティティ** | **項目** |
 | --- | --- |
 | TODO | タイトル、完了／未完了、期日（任意）、作成日時 |
@@ -26,22 +31,21 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 | TODO↔タグ | 多対多 |
 | ユーザー | Supabase Authが管理（自前のusersテーブルは不要） |
 
-### デザインカンプ案
-- SPデザイン
-- PCデザイン
 
+## 学習フェーズ
+### 1. DB設計
 
-**1. DB設計**
 **目標：** ER図が書けて、正規化の判断ができる
 **教材**
 - 『達人に学ぶDB設計 徹底指南書』
+
 **やること**
 1. 本を一通り読む（正規化・外部キー・多対多の章は特に丁寧に）
 2. TODOアプリ要件をもとにtodos / tags / todo_tagsのER図をdraw.ioなどで書く
 3. 設計したER図をもとにPostgreSQLでテーブルを作る
 4. 「なぜこの設計にしたか」を自分の言葉で説明できるか確認する
 
-**2. SQL / PostgreSQL**
+### 2. SQL / PostgreSQL
 
 **目標：** クエリが書けて、なぜそう書くか説明できる
 
@@ -56,7 +60,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 4. INSERT / SELECT / JOIN / DELETEを実際に書いてCRUDを一通り体験する
 5. N+1問題を意図的に再現し、EXPLAINコマンドで確認してJOINで解決する
 
-**3. NestJS**
+### 3. NestJS
 
 **目標：** PostgreSQLと繋がったREST APIを1本作れる
 **Git管理：** この単元でtodo-app/リポジトリを作成し、backend/を追加する
@@ -73,7 +77,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 4. 絞り込み・並び替えのクエリパラメータに対応したエンドポイントを実装する
 5. PostmanかcurlでエンドポイントをたたいてCRUDと絞り込み・並び替えが動くことを確認する
 
-**4. Docker**
+### 4. Docker
 
 **目標：** NestJSアプリをDockerコンテナで動かせる
 **Git管理：** backend/にDockerfileとdocker-compose.ymlを追加する
@@ -87,7 +91,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 2. NestJSのDockerfileをゼロから書いてローカルでビルド・起動できることを確認する
 3. docker-compose.ymlを書き、NestJSコンテナがローカルのPostgreSQLに接続できることを確認する
 
-**5. フロント実装（Vite + React）**
+### 5. フロント実装（Vite + React）
 
 **目標：** NestJS APIと繋がった画面が動く
 **Git管理：** todo-app/にfrontend/を追加する
@@ -101,7 +105,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 5. タグの追加・削除・絞り込みを実装する
 6. 期日順／作成日時順の並び替えと未完了のみ表示フィルターを実装する
 
-**6. 認証**
+### 6. 認証
 
 **目標：** ログイン済みユーザーのみ操作できる
 **Git管理：** backend/とfrontend/両方に変更が入る。DBの接続先もこの単元でSupabaseに切り替える
@@ -119,7 +123,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 5. 未ログイン状態でAPIを叩くと401が返ることを確認する
 6. ログイン済みユーザーが自分のTODOのみ操作できることを確認する
 
-**7. デプロイ**
+### 7. デプロイ
 
 **目標：** URLを叩けば誰でも使える状態にする
 **Git管理：** デプロイ設定ファイル（fly.toml等）を追加する
@@ -139,21 +143,15 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 
 # **全体の流れ**
 
-SQL / PostgreSQL（ローカル・git管理不要）
-↓
-DB設計（ローカル・git管理不要）
-↓
-NestJS API ← todo-app/ リポジトリ作成
-↓
-Docker（Dockerfile・docker-compose.yml追加）
-↓
-Vite + React フロント（frontend/ 追加）
-└ ワイヤーフレーム作成 → 実装
-↓
-認証（Supabase Auth）
-└ DBをローカル→Supabaseに移行
-↓
-デプロイ
-├ Cloudflare Pages（フロント）
-├ Fly.io（NestJS）
-└ Supabase（DB + 認証）
+1. SQL / PostgreSQL（ローカル・git管理不要）
+2. DB設計（ローカル・git管理不要）
+3. NestJS API ← todo-app/ リポジトリ作成
+4. Docker（Dockerfile・docker-compose.yml追加）
+5. Vite + React フロント（frontend/ 追加）
+   - ワイヤーフレーム作成 → 実装
+7. 認証（Supabase Auth）
+   - DBをローカル→Supabaseに移行
+8. デプロイ
+   - Cloudflare Pages（フロント）
+   - Fly.io（NestJS）
+   - Supabase（DB + 認証）
