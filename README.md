@@ -143,8 +143,8 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 
 # **全体の流れ**
 
-1. SQL / PostgreSQL（ローカル・git管理不要）
-2. DB設計（ローカル・git管理不要）
+1. DB設計
+2. SQL / PostgreSQL
 3. NestJS API ← todo-app/ リポジトリ作成
 4. Docker（Dockerfile・docker-compose.yml追加）
 5. Vite + React フロント（frontend/ 追加）
