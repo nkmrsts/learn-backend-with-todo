@@ -33,7 +33,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 
 
 ## 学習フェーズ
-### 1. DB設計
+### 1. DB設計 ☑
 
 **目標：** ER図が書けて、正規化の判断ができる
 
@@ -46,9 +46,9 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
    - [ER diagram](https://github.com/nkmrsts/learn-backend-with-todo/blob/main/docs/todo-er-diagram.drawio.svg)
 3. 設計したER図をもとにPostgreSQLでテーブルを作る
 
-### 2. SQL / PostgreSQL
+### 2. SQL / PostgreSQL ☑
 
-**目標：** クエリが書けて、なぜそう書くか説明できる
+**目標：** クエリが書けて、なぜそう書くか理解できる
 
 **教材**
 - SQLBolt
