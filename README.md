@@ -4,7 +4,7 @@
 
 バックエンド領域で必要となる基礎知識を、実際に手を動かしながら体系的に学ぶことを目的とする。
 
-SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流れとして経験することで、Webアプリケーションがどのように構成され、どの技術がどの役割を持っているのかを理解する。
+SQL、DB設計、API実装、認証、デプロイまでを一連の流れとして経験することで、Webアプリケーションがどのように構成され、どの技術がどの役割を持っているのかを理解する。
 
 ## ゴール
 
@@ -68,44 +68,55 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 4. INSERT / SELECT / JOIN / DELETEを実際に書いてCRUDを一通り体験する
 5. N+1問題を意図的に再現し、EXPLAINコマンドで確認してJOINで解決する
 
-### 3. Hono
+### 3. Hono + Drizzle
 
-**目標：** PostgreSQLと繋がったREST APIを1本作れる
+**目標：** HonoからPostgreSQLへ接続し、REST APIを実装する
 
 **Git管理：** この単元で、backend/を追加する
+
+**構成**
+
+```text
+Hono
+  ↓
+Drizzle ORM
+  ↓
+node-postgres
+  ↓
+PostgreSQL
+```
 
 **やること**
 
 1. Hono公式Getting Started / Routing / Context / HonoRequest / Web Standards
-2. DrizzleでPostgreSQL接続
-3. Hono公式CRUD Exampleを参考にTODO / Tag CRUD実装
-4. Error Handling
-5. Hono公式Validation Guide → Validation実装
-6. 公式Testing Guideを参照　→　Test作成
-7. Hono Best Practices → app.route()でtodos / tagsを分割
-8. 絞り込み・並び替え
-9. curl / Postmanで全体確認
+2. Drizzle ORM + node-postgres (`pg`)を導入し、PostgreSQLに接続
+3. todos / tags / todo_tagsのschemaを定義、Drizzle Kitでmigrationを作成・適用する
+4. Hono公式CRUD Exampleを参考にTODO / Tag CRUD実装
+5. Error Handling
+6. Hono公式Validation Guide → Validation実装
+7. 公式Testing Guideを参照 → Test作成
+8. Hono Best Practices → `app.route()`でtodos / tagsを分割
+9. 絞り込み・並び替え
+10. curl / Postmanで全体確認
 
-### 4. Docker
+### 4. Cloudflare Workers
 
-**目標：** HonoアプリをDockerコンテナで動かせる
-
-**Git管理：** backend/にDockerfileとdocker-compose.ymlを追加する
-
-**教材**
-
-- Docker公式 Get Started → イメージ・コンテナ・Volume・Networkの4概念をここで理解する
-- Zennで「docker-compose 入門」で検索、記事1〜2本読む
+**目標：** HonoアプリをCloudflare Workersで動かせる
 
 **やること**
 
-1. Docker公式ドキュメントでイメージ・コンテナ・Volume・Networkの概念を整理する
-2. HonoのDockerfileをゼロから書いてローカルでビルド・起動できることを確認する
-3. docker-compose.ymlを書き、HonoコンテナがローカルのPostgreSQLに接続できることを確認する
+1. Cloudflare Workersの基本を確認する
+
+- Cloudflare公式 Learning Paths「Workers concepts」
+
+2. Wranglerを導入する
+3. HonoアプリをWorkers環境でローカル実行する
+4. 環境変数・Secretsの扱いを確認する
+5. Cloudflare Workersへデプロイして外部からAPIを叩けることを確認する
 
 ### 5. フロント実装（Vite + React）
 
-**目標：** Hono APIと繋がった画面が動く_
+**目標：** Hono APIと繋がった画面が動く
 
 **Git管理：** todo-app/にfrontend/を追加する
 
@@ -135,7 +146,7 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 
 **やること**
 
-1. SupabaseプロジェクトをつくりDBをローカルからSupabaseに移行する（接続文字列・TypeORM設定・環境変数の切り替えを含む）
+1. SupabaseプロジェクトをつくりDBをローカルからSupabaseに移行する
 2. Supabase AuthでGitHubかGoogleのOAuthを設定する
 3. フロントにsupabase-jsを導入してログイン・ログアウトを実装する
 4. Hono側でSupabaseが発行するJWTを検証するミドルウェアを追加する
@@ -146,19 +157,17 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 
 **目標：** URLを叩けば誰でも使える状態にする
 
-**Git管理：** デプロイ設定ファイル（fly.toml等）を追加する
-
-| **役割**     | **サービス**     |
-| ------------ | ---------------- |
-| フロント     | Cloudflare Pages |
-| バックエンド | Fly.io           |
-| DB / 認証    | Supabase         |
+| 役割         | サービス                         |
+| ------------ | -------------------------------- |
+| フロント     | Cloudflare Workers Static Assets |
+| バックエンド | Cloudflare Workers               |
+| DB / 認証    | Supabase                         |
 
 **やること**
 
-1. 環境変数を.envで管理し本番・開発で切り替えられるようにする
-2. HonoのDockerイメージをFly.ioにデプロイしてAPIが外から叩けることを確認する
-3. ViteプロジェクトをビルドしてCloudflare Pagesにデプロイする
+1. 環境変数を本番・開発で切り替えられるようにする
+2. Hono APIをCloudflare Workersにデプロイする
+3. フロントをCloudflareにデプロイする
 4. フロントからバックのAPIが本番環境で通信できることをブラウザで確認する
 5. 全CRUDと認証が本番で動くことを確認して完了
 
@@ -167,12 +176,12 @@ SQL、DB設計、Docker、API実装、認証、デプロイまでを一連の流
 1. DB設計
 2. SQL / PostgreSQL
 3. Hono API ← todo-app/ リポジトリ作成
-4. Docker（Dockerfile・docker-compose.yml追加）
+4. Cloudflare Workers
 5. Vite + React フロント（frontend/ 追加）
    - ワイヤーフレーム作成 → 実装
 6. 認証（Supabase Auth）
    - DBをローカル→Supabaseに移行
 7. デプロイ
-   - Cloudflare Pages（フロント）
-   - Fly.io（Hono）
+   - Cloudflare Workers Static Assets（React）
+   - Cloudflare Workers（Hono）
    - Supabase（DB + 認証）
