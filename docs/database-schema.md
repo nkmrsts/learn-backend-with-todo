@@ -12,13 +12,6 @@
 | `created_at` | `TIMESTAMPTZ` | NO   | `CURRENT_TIMESTAMP` | -             |
 | `updated_at` | `TIMESTAMPTZ` | NO   | `CURRENT_TIMESTAMP` | -             |
 
-## todo_tags
-
-| Column    | Type      | NULL | Default | Constraint                      |
-| --------- | --------- | ---- | ------- | ------------------------------- |
-| `todo_id` | `INTEGER` | NO   | -       | `PRIMARY KEY (todo_id, tag_id)` |
-| `tag_id`  | `INTEGER` | NO   | -       | `PRIMARY KEY (todo_id, tag_id)` |
-
 ## tags
 
 | Column       | Type          | NULL | Default             | Constraint    |
@@ -28,3 +21,10 @@
 | `name`       | `TEXT`        | NO   | -                   | -             |
 | `created_at` | `TIMESTAMPTZ` | NO   | `CURRENT_TIMESTAMP` | -             |
 | `updated_at` | `TIMESTAMPTZ` | NO   | `CURRENT_TIMESTAMP` | -             |
+
+## todo_tags
+
+| Column    | Type      | NULL | Default | Constraint               |
+| --------- | --------- | ---- | ------- | ------------------------ |
+| `todo_id` | `INTEGER` | NO   | -       | `FOREIGN KEY → todos.id` |
+| `tag_id`  | `INTEGER` | NO   | -       | `FOREIGN KEY → tags.id`  |
