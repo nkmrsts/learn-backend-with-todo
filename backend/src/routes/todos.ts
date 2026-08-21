@@ -1,18 +1,67 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { todos, todoTags } from "../db/schema.js";
+import { todos, todoTags, tags } from "../db/schema.js";
 
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const result = await db.select().from(todos);
+  const rows = await db
+    .select({
+      todo: todos,
+      tag: {
+        id: tags.id,
+        name: tags.name,
+      },
+    })
+    .from(todos)
+    .leftJoin(todoTags, eq(todos.id, todoTags.todo_id))
+    .leftJoin(tags, eq(todoTags.tag_id, tags.id));
+
+  const todoMap = new Map();
+
+  for (const row of rows) {
+    if (!todoMap.has(row.todo.id)) {
+      todoMap.set(row.todo.id, {
+        ...row.todo,
+        tags: [],
+      });
+    }
+
+    if (row.tag) {
+      todoMap.get(row.todo.id).tags.push(row.tag);
+    }
+  }
+
+  const result = Array.from(todoMap.values());
+
   return c.json(result);
 });
 
 app.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
-  const result = await db.select().from(todos).where(eq(todos.id, id));
+  const rows = await db
+    .select({
+      todo: todos,
+      tag: {
+        id: tags.id,
+        name: tags.name,
+      },
+    })
+    .from(todos)
+    .leftJoin(todoTags, eq(todos.id, todoTags.todo_id))
+    .leftJoin(tags, eq(todoTags.tag_id, tags.id))
+    .where(eq(todos.id, id));
+
+  if (rows.length === 0) {
+    return c.json(null);
+  }
+
+  const result = {
+    ...rows[0].todo,
+    tags: rows.filter((row) => row.tag !== null).map((row) => row.tag),
+  };
+
   return c.json(result);
 });
 
@@ -43,7 +92,19 @@ app.post("/", async (c) => {
       );
     }
 
-    return todo;
+    const todoTagList = await tx
+      .select({
+        id: tags.id,
+        name: tags.name,
+      })
+      .from(todoTags)
+      .innerJoin(tags, eq(todoTags.tag_id, tags.id))
+      .where(eq(todoTags.todo_id, todo.id));
+
+    return {
+      ...todo,
+      tags: todoTagList,
+    };
   });
 
   return c.json(result, 201);
@@ -80,7 +141,19 @@ app.patch("/:id", async (c) => {
       }
     }
 
-    return todo;
+    const todoTagList = await tx
+      .select({
+        id: tags.id,
+        name: tags.name,
+      })
+      .from(todoTags)
+      .innerJoin(tags, eq(todoTags.tag_id, tags.id))
+      .where(eq(todoTags.todo_id, id));
+
+    return {
+      ...todo,
+      tags: todoTagList,
+    };
   });
 
   return c.json(result, 201);
