@@ -1,11 +1,35 @@
-import { Hono } from "hono";
+import { z, createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { todos, todoTags, tags } from "../db/schema.js";
+import {
+  TodoSchema,
+  TodosSchema,
+  CreateTodoSchema,
+  UpdateTodoSchema,
+} from "../schemas/todo.js";
+import { IdParamSchema } from "../schemas/common.js";
 
-const app = new Hono();
+const app = new OpenAPIHono();
 
-app.get("/", async (c) => {
+type TodoResponse = z.infer<typeof TodoSchema>;
+
+const getTodosRoute = createRoute({
+  method: "get",
+  path: "/",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: TodosSchema,
+        },
+      },
+      description: "Get todos",
+    },
+  },
+});
+
+app.openapi(getTodosRoute, async (c) => {
   const rows = await db
     .select({
       todo: todos,
@@ -18,28 +42,57 @@ app.get("/", async (c) => {
     .leftJoin(todoTags, eq(todos.id, todoTags.todo_id))
     .leftJoin(tags, eq(todoTags.tag_id, tags.id));
 
-  const todoMap = new Map();
+  const todoMap = new Map<number, TodoResponse>();
 
   for (const row of rows) {
     if (!todoMap.has(row.todo.id)) {
+      // created_at, updated_atはDateなので明示的にResponseの型(string)へ変換する
       todoMap.set(row.todo.id, {
         ...row.todo,
+        created_at: row.todo.created_at.toISOString(),
+        updated_at: row.todo.updated_at.toISOString(),
         tags: [],
       });
     }
 
     if (row.tag) {
-      todoMap.get(row.todo.id).tags.push(row.tag);
+      todoMap.get(row.todo.id)?.tags.push(row.tag);
     }
   }
 
   const result = Array.from(todoMap.values());
 
-  return c.json(result);
+  return c.json(result, 200);
 });
 
-app.get("/:id", async (c) => {
-  const id = Number(c.req.param("id"));
+const getTodoRoute = createRoute({
+  method: "get",
+  path: "/{id}",
+  request: {
+    params: IdParamSchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
+      description: "Get todo",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.null(),
+        },
+      },
+      description: "Todo not found",
+    },
+  },
+});
+
+app.openapi(getTodoRoute, async (c) => {
+  const id = Number(c.req.valid("param"));
   const rows = await db
     .select({
       todo: todos,
@@ -54,24 +107,46 @@ app.get("/:id", async (c) => {
     .where(eq(todos.id, id));
 
   if (rows.length === 0) {
-    return c.json(null);
+    return c.json(null, 404);
   }
 
   const result = {
     ...rows[0].todo,
-    tags: rows.filter((row) => row.tag !== null).map((row) => row.tag),
+    created_at: rows[0].todo.created_at.toISOString(),
+    updated_at: rows[0].todo.updated_at.toISOString(),
+    tags: rows.flatMap((row) => (row.tag !== null ? [row.tag] : [])),
   };
 
-  return c.json(result);
+  return c.json(result, 200);
 });
 
-app.post("/", async (c) => {
-  const body = await c.req.json<{
-    user_id: number;
-    title: string;
-    due_date?: string;
-    tag_ids?: number[];
-  }>();
+const postTodoRoute = createRoute({
+  method: "post",
+  path: "/",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateTodoSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
+      description: "Create todo",
+    },
+  },
+});
+
+app.openapi(postTodoRoute, async (c) => {
+  const body = c.req.valid("json");
 
   const result = await db.transaction(async (tx) => {
     const [todo] = await tx
@@ -103,6 +178,8 @@ app.post("/", async (c) => {
 
     return {
       ...todo,
+      created_at: todo.created_at.toISOString(),
+      updated_at: todo.updated_at.toISOString(),
       tags: todoTagList,
     };
   });
@@ -110,14 +187,35 @@ app.post("/", async (c) => {
   return c.json(result, 201);
 });
 
-app.patch("/:id", async (c) => {
-  const id = Number(c.req.param("id"));
-  const body = await c.req.json<{
-    title?: string;
-    is_done?: boolean;
-    due_date?: string | null;
-    tag_ids?: number[];
-  }>();
+const patchTodoRoute = createRoute({
+  method: "patch",
+  path: "/{id}",
+  request: {
+    params: IdParamSchema,
+    body: {
+      content: {
+        "application/json": {
+          schema: UpdateTodoSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
+      description: "Update todo",
+    },
+  },
+});
+
+app.openapi(patchTodoRoute, async (c) => {
+  const id = Number(c.req.valid("param"));
+  const body = c.req.valid("json");
 
   const { tag_ids, ...todoValues } = body;
 
@@ -152,6 +250,8 @@ app.patch("/:id", async (c) => {
 
     return {
       ...todo,
+      created_at: todo.created_at.toISOString(),
+      updated_at: todo.updated_at.toISOString(),
       tags: todoTagList,
     };
   });
@@ -159,11 +259,24 @@ app.patch("/:id", async (c) => {
   return c.json(result, 201);
 });
 
-app.delete("/:id", async (c) => {
-  const id = Number(c.req.param("id"));
-  const result = await db.delete(todos).where(eq(todos.id, id)).returning();
+const deleteTodoRoute = createRoute({
+  method: "delete",
+  path: "/{id}",
+  request: {
+    params: IdParamSchema,
+  },
+  responses: {
+    204: {
+      description: "Delete todo",
+    },
+  },
+});
 
-  return c.json(result[0]);
+app.openapi(deleteTodoRoute, async (c) => {
+  const id = Number(c.req.valid("param"));
+  await db.delete(todos).where(eq(todos.id, id));
+
+  return c.body(null, 204);
 });
 
 export default app;

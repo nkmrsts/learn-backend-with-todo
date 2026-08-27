@@ -1,53 +1,175 @@
-import { Hono } from "hono";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { tags } from "../db/schema.js";
+import {
+  TagSchema,
+  TagsSchema,
+  CreateTagSchema,
+  UpdateTagSchema,
+} from "../schemas/tag.js";
+import { IdParamSchema } from "../schemas/common.js";
 
-const app = new Hono();
+const app = new OpenAPIHono();
 
-app.get("/", async (c) => {
-  const result = await db.select().from(tags);
-  return c.json(result);
+const getTagsRoute = createRoute({
+  method: "get",
+  path: "/",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: TagsSchema,
+        },
+      },
+      description: "Get tags",
+    },
+  },
 });
 
-app.get("/:id", async (c) => {
-  const id = Number(c.req.param("id"));
-  const result = await db.select().from(tags).where(eq(tags.id, id));
-  return c.json(result);
+app.openapi(getTagsRoute, async (c) => {
+  const tagsResult = await db.select().from(tags);
+
+  const result = tagsResult.map((tag) => ({
+    ...tag,
+    created_at: tag.created_at.toISOString(),
+    updated_at: tag.updated_at.toISOString(),
+  }));
+  return c.json(result, 200);
 });
 
-app.post("/", async (c) => {
-  const body = await c.req.json<{
-    user_id: number;
-    name: string;
-  }>();
-
-  const result = await db.insert(tags).values(body).returning();
-
-  return c.json(result[0], 201);
+const getTagRoute = createRoute({
+  method: "get",
+  path: "/{id}",
+  request: {
+    params: IdParamSchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: TagSchema,
+        },
+      },
+      description: "Get tag",
+    },
+  },
 });
 
-app.patch("/:id", async (c) => {
-  const id = Number(c.req.param("id"));
-  const body = await c.req.json<{
-    user_id: number;
-    name: string;
-  }>();
+app.openapi(getTagRoute, async (c) => {
+  const id = Number(c.req.valid("param"));
+  const [tag] = await db.select().from(tags).where(eq(tags.id, id));
+  const result = {
+    ...tag,
+    created_at: tag.created_at.toISOString(),
+    updated_at: tag.updated_at.toISOString(),
+  };
 
-  const result = await db
+  return c.json(result, 200);
+});
+
+const postTagRoute = createRoute({
+  method: "post",
+  path: "/",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateTagSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: TagSchema,
+        },
+      },
+      description: "Create tag",
+    },
+  },
+});
+
+app.openapi(postTagRoute, async (c) => {
+  const body = c.req.valid("json");
+
+  const [tag] = await db.insert(tags).values(body).returning();
+
+  const result = {
+    ...tag,
+    created_at: tag.created_at.toISOString(),
+    updated_at: tag.updated_at.toISOString(),
+  };
+
+  return c.json(result, 201);
+});
+
+const patchTagRoute = createRoute({
+  method: "patch",
+  path: "/{id}",
+  request: {
+    params: IdParamSchema,
+    body: {
+      content: {
+        "application/json": {
+          schema: UpdateTagSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: TagSchema,
+        },
+      },
+      description: "Update tag",
+    },
+  },
+});
+
+app.openapi(patchTagRoute, async (c) => {
+  const id = Number(c.req.valid("param"));
+  const body = c.req.valid("json");
+
+  const [tag] = await db
     .update(tags)
     .set(body)
     .where(eq(tags.id, id))
     .returning();
 
-  return c.json(result[0]);
+  const result = {
+    ...tag,
+    created_at: tag.created_at.toISOString(),
+    updated_at: tag.updated_at.toISOString(),
+  };
+
+  return c.json(result, 200);
 });
 
-app.delete("/:id", async (c) => {
-  const id = Number(c.req.param("id"));
-  const result = await db.delete(tags).where(eq(tags.id, id)).returning();
+const deleteTagRoute = createRoute({
+  method: "delete",
+  path: "/{id}",
+  request: {
+    params: IdParamSchema,
+  },
+  responses: {
+    204: {
+      description: "Delete tag",
+    },
+  },
+});
 
-  return c.json(result[0]);
+app.openapi(deleteTagRoute, async (c) => {
+  const id = Number(c.req.valid("param"));
+  await db.delete(tags).where(eq(tags.id, id));
+
+  return c.body(null, 204);
 });
 
 export default app;

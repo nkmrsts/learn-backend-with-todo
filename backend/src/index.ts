@@ -1,9 +1,10 @@
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
+import { swaggerUI } from "@hono/swagger-ui";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import todos from "./routes/todos.js";
 import tags from "./routes/tags.js";
 
-const app = new Hono();
+const app = new OpenAPIHono();
 
 app.route("/todos", todos);
 app.route("/tags", tags);
@@ -17,6 +18,18 @@ app.onError((err, c) => {
 
   return c.json({ message: "Internal Server Error", ok: false }, 500);
 });
+
+// The OpenAPI documentation will be available at /doc
+app.doc("/doc", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "My API",
+  },
+});
+
+// Use the middleware to serve Swagger UI at /swagger
+app.get("/swagger", swaggerUI({ url: "/doc" }));
 
 serve(
   {
