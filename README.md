@@ -99,6 +99,8 @@ PostgreSQL
 9. 絞り込み・並び替え
 10. curl / Postmanで全体確認
 
+詳細なメモは/docs/phase3.mdに記載
+
 ### 4. Cloudflare Workers
 
 **目標：** HonoアプリをCloudflare Workersで動かせる
