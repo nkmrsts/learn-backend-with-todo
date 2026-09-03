@@ -57,7 +57,7 @@ const getTagRoute = createRoute({
 });
 
 app.openapi(getTagRoute, async (c) => {
-  const id = Number(c.req.valid("param"));
+  const id = Number(c.req.valid("param").id);
   const [tag] = await db.select().from(tags).where(eq(tags.id, id));
   const result = {
     ...tag,
@@ -134,7 +134,7 @@ const patchTagRoute = createRoute({
 });
 
 app.openapi(patchTagRoute, async (c) => {
-  const id = Number(c.req.valid("param"));
+  const id = Number(c.req.valid("param").id);
   const body = c.req.valid("json");
 
   const [tag] = await db
@@ -166,7 +166,7 @@ const deleteTagRoute = createRoute({
 });
 
 app.openapi(deleteTagRoute, async (c) => {
-  const id = Number(c.req.valid("param"));
+  const id = Number(c.req.valid("param").id);
   await db.delete(tags).where(eq(tags.id, id));
 
   return c.body(null, 204);

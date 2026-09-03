@@ -92,7 +92,7 @@ const getTodoRoute = createRoute({
 });
 
 app.openapi(getTodoRoute, async (c) => {
-  const id = Number(c.req.valid("param"));
+  const id = Number(c.req.valid("param").id);
   const rows = await db
     .select({
       todo: todos,
@@ -214,7 +214,7 @@ const patchTodoRoute = createRoute({
 });
 
 app.openapi(patchTodoRoute, async (c) => {
-  const id = Number(c.req.valid("param"));
+  const id = Number(c.req.valid("param").id);
   const body = c.req.valid("json");
 
   const { tag_ids, ...todoValues } = body;
@@ -273,7 +273,7 @@ const deleteTodoRoute = createRoute({
 });
 
 app.openapi(deleteTodoRoute, async (c) => {
-  const id = Number(c.req.valid("param"));
+  const id = Number(c.req.valid("param").id);
   await db.delete(todos).where(eq(todos.id, id));
 
   return c.body(null, 204);
