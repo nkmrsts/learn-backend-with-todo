@@ -9,6 +9,7 @@ import {
   UpdateTodoSchema,
 } from "../schemas/todo.js";
 import { IdParamSchema } from "../schemas/common.js";
+import { ErrorResponse } from "../schemas/error.js";
 
 const app = new OpenAPIHono();
 
@@ -83,7 +84,7 @@ const getTodoRoute = createRoute({
     404: {
       content: {
         "application/json": {
-          schema: z.null(),
+          schema: ErrorResponse,
         },
       },
       description: "Todo not found",
@@ -106,8 +107,13 @@ app.openapi(getTodoRoute, async (c) => {
     .leftJoin(tags, eq(todoTags.tag_id, tags.id))
     .where(eq(todos.id, id));
 
-  if (rows.length === 0) {
-    return c.json(null, 404);
+  if (rows.length === 0 || !rows[0]) {
+    return c.json(
+      {
+        message: "Todo not found",
+      },
+      404,
+    );
   }
 
   const result = {
@@ -158,6 +164,10 @@ app.openapi(postTodoRoute, async (c) => {
       })
       .returning();
 
+    if (!todo) {
+      throw new Error("Failed to create todo");
+    }
+
     if (body.tag_ids && body.tag_ids.length > 0) {
       await tx.insert(todoTags).values(
         body.tag_ids.map((tag_id) => ({
@@ -183,7 +193,6 @@ app.openapi(postTodoRoute, async (c) => {
       tags: todoTagList,
     };
   });
-
   return c.json(result, 201);
 });
 
@@ -202,13 +211,21 @@ const patchTodoRoute = createRoute({
     },
   },
   responses: {
-    201: {
+    200: {
       content: {
         "application/json": {
           schema: TodoSchema,
         },
       },
       description: "Update todo",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponse,
+        },
+      },
+      description: "Todo not found",
     },
   },
 });
@@ -225,6 +242,10 @@ app.openapi(patchTodoRoute, async (c) => {
       .set(todoValues)
       .where(eq(todos.id, id))
       .returning();
+
+    if (!todo) {
+      return null;
+    }
 
     if (tag_ids !== undefined) {
       await tx.delete(todoTags).where(eq(todoTags.todo_id, id));
@@ -256,7 +277,16 @@ app.openapi(patchTodoRoute, async (c) => {
     };
   });
 
-  return c.json(result, 201);
+  if (result === null) {
+    return c.json(
+      {
+        message: "Todo not found",
+      },
+      404,
+    );
+  }
+
+  return c.json(result, 200);
 });
 
 const deleteTodoRoute = createRoute({
@@ -269,13 +299,32 @@ const deleteTodoRoute = createRoute({
     204: {
       description: "Delete todo",
     },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponse,
+        },
+      },
+      description: "Todo not found",
+    },
   },
 });
 
 app.openapi(deleteTodoRoute, async (c) => {
   const id = Number(c.req.valid("param").id);
-  await db.delete(todos).where(eq(todos.id, id));
+  const [deletedTodo] = await db
+    .delete(todos)
+    .where(eq(todos.id, id))
+    .returning();
 
+  if (!deletedTodo) {
+    return c.json(
+      {
+        message: "Todo not found",
+      },
+      404,
+    );
+  }
   return c.body(null, 204);
 });
 

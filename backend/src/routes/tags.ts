@@ -9,6 +9,7 @@ import {
   UpdateTagSchema,
 } from "../schemas/tag.js";
 import { IdParamSchema } from "../schemas/common.js";
+import { ErrorResponse } from "../schemas/error.js";
 
 const app = new OpenAPIHono();
 
@@ -53,12 +54,30 @@ const getTagRoute = createRoute({
       },
       description: "Get tag",
     },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponse,
+        },
+      },
+      description: "Tag not found",
+    },
   },
 });
 
 app.openapi(getTagRoute, async (c) => {
   const id = Number(c.req.valid("param").id);
   const [tag] = await db.select().from(tags).where(eq(tags.id, id));
+
+  if (!tag) {
+    return c.json(
+      {
+        message: "Tag not found",
+      },
+      404,
+    );
+  }
+
   const result = {
     ...tag,
     created_at: tag.created_at.toISOString(),
@@ -98,6 +117,10 @@ app.openapi(postTagRoute, async (c) => {
 
   const [tag] = await db.insert(tags).values(body).returning();
 
+  if (!tag) {
+    throw new Error("Failed to create tag");
+  }
+
   const result = {
     ...tag,
     created_at: tag.created_at.toISOString(),
@@ -130,6 +153,14 @@ const patchTagRoute = createRoute({
       },
       description: "Update tag",
     },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponse,
+        },
+      },
+      description: "Tag not found",
+    },
   },
 });
 
@@ -142,6 +173,15 @@ app.openapi(patchTagRoute, async (c) => {
     .set(body)
     .where(eq(tags.id, id))
     .returning();
+
+  if (!tag) {
+    return c.json(
+      {
+        message: "Tag not found",
+      },
+      404,
+    );
+  }
 
   const result = {
     ...tag,
@@ -162,12 +202,29 @@ const deleteTagRoute = createRoute({
     204: {
       description: "Delete tag",
     },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponse,
+        },
+      },
+      description: "Tag not found",
+    },
   },
 });
 
 app.openapi(deleteTagRoute, async (c) => {
   const id = Number(c.req.valid("param").id);
-  await db.delete(tags).where(eq(tags.id, id));
+  const [tag] = await db.delete(tags).where(eq(tags.id, id)).returning();
+
+  if (!tag) {
+    return c.json(
+      {
+        message: "Tag not found",
+      },
+      404,
+    );
+  }
 
   return c.body(null, 204);
 });
