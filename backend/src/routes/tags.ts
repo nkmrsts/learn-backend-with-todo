@@ -1,4 +1,5 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { validator } from "hono/validator";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { tags } from "../db/schema.js";

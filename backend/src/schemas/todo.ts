@@ -35,19 +35,50 @@ export const TodoSchema = z
 // リクエストモデル
 export const CreateTodoSchema = z
   .object({
-    user_id: z.number(),
-    title: z.string(),
-    due_date: z.string().optional(),
-    tag_ids: z.array(z.number()).optional(),
+    user_id: z.number().int().positive(),
+    title: z.string().refine((value) => value.trim().length > 0, {
+      message: "title must not be empty",
+    }),
+    due_date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, {
+        message: "due_date must be in YYYY-MM-DD format",
+      })
+      .optional(),
+    tag_ids: z
+      .array(z.number().int().positive())
+      .refine((ids) => new Set(ids).size === ids.length, {
+        message: "tag_ids must not contain duplicates",
+      })
+      .optional(),
   })
   .openapi("CreateTodoSchema");
 
 export const UpdateTodoSchema = z
   .object({
-    title: z.string().optional(),
+    title: z
+      .string()
+      .refine((value) => value.trim().length > 0, {
+        message: "title must not be empty",
+      })
+      .optional(),
     is_done: z.boolean().optional(),
-    due_date: z.string().nullable().optional(),
-    tag_ids: z.array(z.number()).optional(),
+    due_date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, {
+        message: "due_date must be in YYYY-MM-DD format",
+      })
+      .nullable()
+      .optional(),
+    tag_ids: z
+      .array(z.number().int().positive())
+      .refine((ids) => new Set(ids).size === ids.length, {
+        message: "tag_ids must not contain duplicates",
+      })
+      .optional(),
+  })
+  .refine((body) => Object.keys(body).length > 0, {
+    message: "At least one field must be provided",
   })
   .openapi("UpdateTodoSchema");
 

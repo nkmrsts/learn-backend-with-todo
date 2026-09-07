@@ -23,14 +23,18 @@ export const TagSchema = z
 // リクエストモデル
 export const CreateTagSchema = z
   .object({
-    user_id: z.number(),
-    name: z.string(),
+    user_id: z.number().int().positive(),
+    name: z.string().refine((value) => value.trim().length > 0, {
+      message: "name must not be empty",
+    }),
   })
   .openapi("CreateTagSchema");
 
 export const UpdateTagSchema = z
   .object({
-    name: z.string(),
+    name: z.string().refine((value) => value.trim().length > 0, {
+      message: "name must not be empty",
+    }),
   })
   .openapi("UpdateTagSchema");
 
