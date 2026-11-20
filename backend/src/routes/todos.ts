@@ -1,6 +1,6 @@
 import { z, createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { validator } from "hono/validator";
-import { eq } from "drizzle-orm";
+import { and, eq, exists, sql } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { todos, todoTags, tags } from "../db/schema.js";
 import {
@@ -9,7 +9,7 @@ import {
   CreateTodoSchema,
   UpdateTodoSchema,
 } from "../schemas/todo.js";
-import { IdParamSchema } from "../schemas/common.js";
+import { IdParamSchema, GetTodosQuerySchema } from "../schemas/common.js";
 import { ErrorResponse } from "../schemas/error.js";
 
 const app = new OpenAPIHono();
@@ -19,6 +19,9 @@ type TodoResponse = z.infer<typeof TodoSchema>;
 const getTodosRoute = createRoute({
   method: "get",
   path: "/",
+  request: {
+    query: GetTodosQuerySchema,
+  },
   responses: {
     200: {
       content: {
@@ -32,6 +35,24 @@ const getTodosRoute = createRoute({
 });
 
 app.openapi(getTodosRoute, async (c) => {
+  const query = c.req.valid("query");
+  const conditions = [];
+
+  if (query.completed !== undefined) {
+    conditions.push(eq(todos.is_done, query.completed));
+  }
+
+  if (query.tag_id !== undefined) {
+    const tagSubquery = db
+      .select({ id: sql`1` })
+      .from(todoTags)
+      .where(
+        and(eq(todoTags.todo_id, todos.id), eq(todoTags.tag_id, query.tag_id)),
+      );
+
+    conditions.push(exists(tagSubquery));
+  }
+
   const rows = await db
     .select({
       todo: todos,
@@ -42,7 +63,8 @@ app.openapi(getTodosRoute, async (c) => {
     })
     .from(todos)
     .leftJoin(todoTags, eq(todos.id, todoTags.todo_id))
-    .leftJoin(tags, eq(todoTags.tag_id, tags.id));
+    .leftJoin(tags, eq(todoTags.tag_id, tags.id))
+    .where(and(...conditions));
 
   const todoMap = new Map<number, TodoResponse>();
 

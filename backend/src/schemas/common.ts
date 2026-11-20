@@ -17,3 +17,12 @@ export const IdParamSchema = z.object({
       example: "1",
     }),
 });
+
+export const GetTodosQuerySchema = z.object({
+  completed: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+  tag_id: z.coerce.number().int().positive().optional(),
+  sort: z.enum(["due_date", "created_at"]).optional(),
+});
