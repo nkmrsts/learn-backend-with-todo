@@ -37,7 +37,7 @@ export const todoTags = pgTable(
   {
     todo_id: integer()
       .notNull()
-      .references(() => todos.id),
+      .references(() => todos.id, { onDelete: "cascade" }),
 
     tag_id: integer()
       .notNull()

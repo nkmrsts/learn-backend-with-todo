@@ -1,0 +1,294 @@
+{
+  "dialect": "postgres",
+  "id": "f56bbc86-f029-47aa-8adb-95c37cc17be1",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "version": "8",
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "tags",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "todo_tags",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "todos",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "byDefault",
+        "name": "todos_id_seq",
+        "increment": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "startWith": "1",
+        "cycle": false,
+        "cache": 1
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "todo_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todo_tags"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "byDefault",
+        "name": "tags_id_seq",
+        "increment": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "startWith": "1",
+        "cycle": false,
+        "cache": 1
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "tags"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "tag_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todo_tags"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "tags"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "tags"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "title",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "is_done",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "CURRENT_TIMESTAMP",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "tags"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "CURRENT_TIMESTAMP",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "tags"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "due_date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "CURRENT_TIMESTAMP",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "CURRENT_TIMESTAMP",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "tag_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "tags",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "todo_tags_tag_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "todo_tags"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "todo_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "todos",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "todo_tags_todo_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "todo_tags"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "todos_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "todos"
+    },
+    {
+      "columns": [
+        "todo_id",
+        "tag_id"
+      ],
+      "nameExplicit": true,
+      "name": "todo_tags_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "todo_tags"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "tags_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "tags"
+    }
+  ],
+  "renames": []
+}
