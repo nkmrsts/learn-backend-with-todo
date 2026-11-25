@@ -284,7 +284,7 @@ TODO一覧APIへ、アプリ要件に必要なQuery Parameterを追加する。
 例えば、
 
 ```
-GET /todos?completed=false
+GET /todos?is_done=false
 GET /todos?tag_id=3
 GET /todos?sort=due_date
 ```

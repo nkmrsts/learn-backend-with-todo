@@ -41,8 +41,8 @@ app.openapi(getTodosRoute, async (c) => {
 
   const conditions = [];
 
-  if (query.completed !== undefined) {
-    conditions.push(eq(todos.is_done, query.completed));
+  if (query.is_done !== undefined) {
+    conditions.push(eq(todos.is_done, query.is_done));
   }
 
   if (query.tag_id !== undefined) {

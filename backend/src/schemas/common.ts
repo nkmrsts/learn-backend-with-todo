@@ -19,7 +19,7 @@ export const IdParamSchema = z.object({
 });
 
 export const GetTodosQuerySchema = z.object({
-  completed: z
+  is_done: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
     .optional(),
