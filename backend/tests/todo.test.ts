@@ -44,12 +44,16 @@ describe("Todo 正常系", () => {
     mockDb.select.mockReturnValue({
       from: vi.fn().mockReturnValue({
         leftJoin: vi.fn().mockReturnValue({
-          leftJoin: vi.fn().mockResolvedValue([
-            {
-              todo,
-              tag,
-            },
-          ]),
+          leftJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockResolvedValue([
+                {
+                  todo,
+                  tag,
+                },
+              ]),
+            }),
+          }),
         }),
       }),
     });
@@ -104,7 +108,8 @@ describe("Todo 正常系", () => {
     };
 
     mockDb.transaction.mockImplementation(
-      async (callback: (tx: typeof tx) => Promise<unknown>) => callback(tx),
+      async (callback: (transaction: typeof tx) => Promise<unknown>) =>
+        callback(tx),
     );
 
     const res = await todos.request("/", {
@@ -148,7 +153,8 @@ describe("Todo 正常系", () => {
     };
 
     mockDb.transaction.mockImplementation(
-      async (callback: (tx: typeof tx) => Promise<unknown>) => callback(tx),
+      async (callback: (transaction: typeof tx) => Promise<unknown>) =>
+        callback(tx),
     );
 
     const res = await todos.request("/1", {
@@ -216,7 +222,8 @@ describe("Todo 404", () => {
     };
 
     mockDb.transaction.mockImplementation(
-      async (callback: (tx: typeof tx) => Promise<unknown>) => callback(tx),
+      async (callback: (transaction: typeof tx) => Promise<unknown>) =>
+        callback(tx),
     );
 
     const res = await todos.request("/999", {
@@ -425,6 +432,20 @@ describe("PATCH /todos", () => {
 });
 
 describe("GET /todos", () => {
+  it("tag_idが不正な場合はValidation Errorになる", async () => {
+    const res = await todos.request("/?tag_id=abc");
+
+    expect(res.status).toBe(400);
+    expect(mockDb.select).not.toHaveBeenCalled();
+  });
+
+  it("sortが不正な場合はValidation Errorになる", async () => {
+    const res = await todos.request("/?sort=invalid");
+
+    expect(res.status).toBe(400);
+    expect(mockDb.select).not.toHaveBeenCalled();
+  });
+
   describe("GET /todos/:id", () => {
     it("idが整数でない場合はValidation Errorになる", async () => {
       const res = await todos.request("/abc");

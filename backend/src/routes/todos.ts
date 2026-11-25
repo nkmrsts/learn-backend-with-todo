@@ -264,11 +264,14 @@ app.openapi(patchTodoRoute, async (c) => {
   const { tag_ids, ...todoValues } = body;
 
   const result = await db.transaction(async (tx) => {
-    const [todo] = await tx
-      .update(todos)
-      .set(todoValues)
-      .where(eq(todos.id, id))
-      .returning();
+    const [todo] =
+      Object.keys(todoValues).length > 0
+        ? await tx
+            .update(todos)
+            .set(todoValues)
+            .where(eq(todos.id, id))
+            .returning()
+        : await tx.select().from(todos).where(eq(todos.id, id));
 
     if (!todo) {
       return null;
