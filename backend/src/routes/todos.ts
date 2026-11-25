@@ -1,6 +1,6 @@
 import { z, createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { validator } from "hono/validator";
-import { and, eq, exists, sql } from "drizzle-orm";
+import { and, eq, exists, sql, asc, desc } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { todos, todoTags, tags } from "../db/schema.js";
 import {
@@ -36,6 +36,9 @@ const getTodosRoute = createRoute({
 
 app.openapi(getTodosRoute, async (c) => {
   const query = c.req.valid("query");
+  const orderCondition =
+    query.sort === "due_date" ? asc(todos.due_date) : desc(todos.created_at);
+
   const conditions = [];
 
   if (query.completed !== undefined) {
@@ -64,7 +67,8 @@ app.openapi(getTodosRoute, async (c) => {
     .from(todos)
     .leftJoin(todoTags, eq(todos.id, todoTags.todo_id))
     .leftJoin(tags, eq(todoTags.tag_id, tags.id))
-    .where(and(...conditions));
+    .where(and(...conditions))
+    .orderBy(orderCondition);
 
   const todoMap = new Map<number, TodoResponse>();
 
