@@ -99,7 +99,7 @@ PostgreSQL
 9. 絞り込み・並び替え
 10. curl / Postmanで全体確認
 
-詳細なメモは/docs/phase3.mdに記載
+詳細なメモは[/docs/phase3.md](https://github.com/nkmrsts/learn-backend-with-todo/blob/main/docs/phase3.md)に記載
 
 ### 4. Cloudflare Workers
 
@@ -116,6 +116,8 @@ PostgreSQL
    - Drizzle Kitでmigrationを適用する
    - WorkersからPostgreSQLへの接続方法を確認・実装する
 6. Cloudflare Workersへデプロイし、外部からAPIを叩いて動作することを確認する
+
+詳細なメモは[/docs/phase4.html](https://github.com/nkmrsts/learn-backend-with-todo/blob/main/docs/phase4.html)に記載
 
 ### 5. フロント実装（Vite + React）
 
