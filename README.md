@@ -108,13 +108,14 @@ PostgreSQL
 **やること**
 
 1. Cloudflare Workersの基本を確認する
-
-- Cloudflare公式 Learning Paths「Workers concepts」
-
-2. Wranglerを導入する
-3. HonoアプリをWorkers環境でローカル実行する
+   - Cloudflare公式 Learning Paths「Workers concepts」
+2. Wranglerを導入し、HonoアプリをWorkers環境に対応させる
+3. HonoアプリをWorkers環境でローカル実行し、ローカルPostgreSQLへの接続を確認する
 4. 環境変数・Secretsの扱いを確認する
-5. Cloudflare Workersへデプロイして外部からAPIを叩けることを確認する
+5. Supabaseプロジェクトを作成し、PostgreSQLへ接続できるようにする
+   - Drizzle Kitでmigrationを適用する
+   - WorkersからPostgreSQLへの接続方法を確認・実装する
+6. Cloudflare Workersへデプロイし、外部からAPIを叩いて動作することを確認する
 
 ### 5. フロント実装（Vite + React）
 
@@ -148,12 +149,11 @@ PostgreSQL
 
 **やること**
 
-1. SupabaseプロジェクトをつくりDBをローカルからSupabaseに移行する
-2. Supabase AuthでGitHubかGoogleのOAuthを設定する
-3. フロントにsupabase-jsを導入してログイン・ログアウトを実装する
-4. Hono側でSupabaseが発行するJWTを検証するミドルウェアを追加する
-5. 未ログイン状態でAPIを叩くと401が返ることを確認する
-6. ログイン済みユーザーが自分のTODOのみ操作できることを確認する
+1. Supabase AuthでGitHubかGoogleのOAuthを設定する
+2. フロントにsupabase-jsを導入してログイン・ログアウトを実装する
+3. Hono側でSupabaseが発行するJWTを検証するミドルウェアを追加する
+4. 未ログイン状態でAPIを叩くと401が返ることを確認する
+5. ログイン済みユーザーが自分のTODOのみ操作できることを確認する
 
 ### 7. デプロイ
 
@@ -179,10 +179,12 @@ PostgreSQL
 2. SQL / PostgreSQL
 3. Hono API ← todo-app/ リポジトリ作成
 4. Cloudflare Workers
+   - Hono APIをWorkers環境へ移行
+   - DBをSupabaseに移行
+   - APIをデプロイして動作確認
 5. Vite + React フロント（frontend/ 追加）
    - ワイヤーフレーム作成 → 実装
 6. 認証（Supabase Auth）
-   - DBをローカル→Supabaseに移行
 7. デプロイ
    - Cloudflare Workers Static Assets（React）
    - Cloudflare Workers（Hono）
